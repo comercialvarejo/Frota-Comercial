@@ -830,6 +830,22 @@ function demoStrip(){
   return '<div class="demo"><div class="demo-row" style="justify-content:space-between"><span>'+esc(S.me.name)+' <span class="sub">('+esc(S.me.id)+')</span></span><button class="btn" data-act="logout">Sair</button></div></div>';
 }
 function showAuth(state,msg){S.auth=state;S.authMsg=msg||'';S.me=null;renderMain();}
+function authErr(e){
+  var c=(e&&e.code)||'';
+  var m={
+    'auth/operation-not-allowed':'O login por link de e-mail não está ativado. No Firebase, abra Authentication > Método de login > E-mail/senha e ative também "Link por e-mail (login sem senha)".',
+    'auth/unauthorized-continue-uri':'O domínio deste site não está autorizado. No Firebase, abra Authentication > Configurações > Domínios autorizados e adicione: '+location.hostname,
+    'auth/invalid-continue-uri':'O endereço do site não foi aceito pelo Firebase. Confira Authentication > Configurações > Domínios autorizados: '+location.hostname,
+    'auth/api-key-not-valid.-please-pass-a-valid-api-key.':'A apiKey do firebase-config.js está incorreta. Copie de novo do Firebase (Configurações do projeto > Seus apps).',
+    'auth/invalid-api-key':'A apiKey do firebase-config.js está incorreta. Copie de novo do Firebase (Configurações do projeto > Seus apps).',
+    'auth/configuration-not-found':'O Authentication ainda não foi iniciado neste projeto. No Firebase, abra Authentication e clique em Vamos começar.',
+    'auth/network-request-failed':'Sem conexão com o Firebase. Verifique a internet e tente de novo.',
+    'auth/too-many-requests':'Muitas tentativas. Espere alguns minutos e tente de novo.',
+    'auth/invalid-email':'E-mail inválido. Confira o que foi digitado.'
+  };
+  if(firebaseConfig&&String(firebaseConfig.apiKey).indexOf('COLE_AQUI')>=0)return 'O arquivo firebase-config.js ainda está com COLE_AQUI. Cole nele a configuração do seu app Web do Firebase.';
+  return (m[c]||'Não foi possível enviar o link agora.')+(c?' (código: '+c+')':'');
+}
 function sendLink(email){
   email=(email||'').trim().toLowerCase();
   if(!/^[^@\s]+@gtf\.com\.br$/.test(email)){S.authMsg='Use o seu e-mail da GTF, terminado em @gtf.com.br.';renderMain();return;}
@@ -837,7 +853,7 @@ function sendLink(email){
   sendSignInLinkToEmail(fauth,email,{url:url,handleCodeInApp:true}).then(function(){
     try{localStorage.setItem('frota_email',email);}catch(e){}
     S.auth='sent';S.authMsg=email;renderMain();
-  }).catch(function(){S.authMsg='Não foi possível enviar o link agora. Tente de novo em instantes.';renderMain();});
+  }).catch(function(e){S.authMsg=authErr(e);renderMain();});
 }
 function finishLink(email){
   signInWithEmailLink(fauth,email,location.href).then(function(){
