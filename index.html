@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1F5FBF">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Frota">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Frota comercial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F4F5F2; --surface:#FFFFFF; --ink:#1B2430; --muted:#5E6A78; --line:#D9DDD6;
+  --accent:#1F5FBF; --accent-ink:#FFFFFF;
+  --ok:#1F7A4D; --ok-bg:#E1F1E8; --warn:#8A5700; --warn-bg:#FBEBC8;
+  --bad:#B3302F; --bad-bg:#F8DEDC; --info-bg:#E3ECFA;
+  --font:'Barlow',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
+  --display:'Barlow Condensed','Arial Narrow',system-ui,sans-serif;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#12171D; --surface:#1B232C; --ink:#E7EBEF; --muted:#98A4B1; --line:#2E3946;
+    --accent:#6EA1F0; --accent-ink:#0E1A2B;
+    --ok:#58C48A; --ok-bg:#16301F; --warn:#E8B04A; --warn-bg:#3A2D10;
+    --bad:#F08A87; --bad-bg:#3C1B1B; --info-bg:#1B2A42;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12171D; --surface:#1B232C; --ink:#E7EBEF; --muted:#98A4B1; --line:#2E3946;
+  --accent:#6EA1F0; --accent-ink:#0E1A2B;
+  --ok:#58C48A; --ok-bg:#16301F; --warn:#E8B04A; --warn-bg:#3A2D10;
+  --bad:#F08A87; --bad-bg:#3C1B1B; --info-bg:#1B2A42;
+  color-scheme:dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.45;min-height:100%}
+body.noscroll{overflow:hidden}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+button,input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3,p{margin:0}
+.app{max-width:680px;margin:0 auto;padding:0 16px 96px}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0 10px}
+.top h1{font-family:var(--display);font-size:30px;font-weight:700;line-height:1.05;letter-spacing:.01em}
+.sub{color:var(--muted);font-size:14px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:14px}
+.tab{background:none;border:0;padding:10px 14px;font-weight:600;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-1px;cursor:pointer;display:flex;align-items:center;gap:8px}
+.tab.on{color:var(--ink);border-bottom-color:var(--accent)}
+.count{background:var(--accent);color:var(--accent-ink);border-radius:999px;font-size:12px;padding:1px 8px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;cursor:pointer;font-size:14px}
+.chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 16px;font-weight:600;cursor:pointer;min-height:44px}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.ok{background:var(--ok);color:#fff;border-color:var(--ok)}
+.btn.danger{color:var(--bad);border-color:var(--bad)}
+.btn.block{width:100%}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:10px;width:100%;text-align:left;display:block;cursor:pointer}
+.card.static{cursor:default}
+.card .row1{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.card .meta{color:var(--muted);font-size:14px;margin-top:8px}
+.card .dest{margin-top:2px;font-weight:500}
+.model{font-size:14px;color:var(--muted);margin-top:4px}
+.plate{display:inline-flex;flex-direction:column;border:2px solid #222;border-radius:6px;overflow:hidden;background:#fff;color:#111;vertical-align:top}
+.plate::before{content:"";height:6px;background:#1F5FBF}
+.plate span{font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:.08em;text-transform:uppercase;padding:0 10px 1px;line-height:1.15}
+.pill{display:inline-block;border-radius:999px;padding:3px 10px;font-size:13px;font-weight:600;white-space:nowrap}
+.pill.pendente{background:var(--warn-bg);color:var(--warn)}
+.pill.aprovado,.pill.reservado{background:var(--info-bg);color:var(--accent)}
+.pill.em_uso{background:var(--accent);color:var(--accent-ink)}
+.pill.atrasado{background:var(--bad);color:#fff}
+.pill.devolvido,.pill.livre{background:var(--ok-bg);color:var(--ok)}
+.pill.recusado{background:var(--bad-bg);color:var(--bad)}
+.pill.cancelado{background:var(--line);color:var(--muted)}
+.empty{border:1px dashed var(--line);border-radius:12px;padding:24px 16px;text-align:center;color:var(--muted)}
+.banner{border-radius:10px;padding:10px 12px;margin:0 0 12px;font-size:14px}
+.banner.bad{background:var(--bad-bg);color:var(--bad)}
+.banner.warn{background:var(--warn-bg);color:var(--warn)}
+.banner.info{background:var(--info-bg);color:var(--accent)}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+/* sheet */
+.sheet-back{position:fixed;inset:0;background:rgba(10,14,18,.55);z-index:20}
+.sheet{position:fixed;z-index:21;left:0;right:0;bottom:0;top:calc(env(safe-area-inset-top,0px) + 24px);background:var(--bg);border-radius:18px 18px 0 0;max-width:680px;margin:0 auto;display:flex;flex-direction:column}
+.sheet-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line)}
+.sheet-head h2{font-family:var(--display);font-size:24px;font-weight:700}
+.sheet-body{overflow-y:auto;padding:16px 16px calc(32px + env(safe-area-inset-bottom,0px));flex:1}
+.head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:14px}
+.facts{margin:0 0 16px;display:grid;gap:8px}
+.facts div{display:flex;justify-content:space-between;gap:16px;border-bottom:1px solid var(--line);padding-bottom:8px}
+.facts dt{color:var(--muted)}
+.facts dd{margin:0;text-align:right;font-weight:500}
+.blk{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px}
+.blk h3{font-family:var(--display);font-size:20px;font-weight:700;margin-bottom:4px}
+.blk p.hint{color:var(--muted);font-size:14px;margin-bottom:12px}
+.field{display:block;margin-bottom:12px}
+.field>span{display:block;font-weight:600;font-size:14px;margin-bottom:4px}
+.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:10px 12px;min-height:44px}
+.field textarea{min-height:72px;resize:vertical}
+.field small{display:block;color:var(--muted);margin-top:4px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row .btn{flex:1}
+.slots{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}
+.slot{position:relative;border:2px dashed var(--line);border-radius:12px;min-height:104px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;cursor:pointer;overflow:hidden;padding:8px;background:var(--bg)}
+.slot:first-child{grid-column:1/-1}
+.slot input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.slot .lab{font-size:14px;font-weight:600;position:relative}
+.slot .lab.err{color:var(--bad)}
+.slot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.slot.done{border-style:solid;border-color:var(--ok)}
+.slot .lab.on{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);color:#fff;padding:4px}
+.slot .ok-badge{position:absolute;top:6px;right:6px;background:var(--ok);color:#fff;border-radius:999px;width:24px;height:24px;display:grid;place-items:center}
+.cam{color:var(--muted)}
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.pgrid figure{margin:0}
+.pgrid img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:8px;border:1px solid var(--line);cursor:zoom-in;display:block}
+.pgrid figcaption{font-size:12px;color:var(--muted);margin-top:2px}
+.pgrid .miss{aspect-ratio:auto}
+.pgrid .miss span{display:grid;place-items:center;aspect-ratio:4/3;border:1px dashed var(--line);border-radius:8px;color:var(--muted);font-size:12px}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.cmp h4{margin:8px 0 0;font-size:14px;grid-column:1/-1}
+.cmp figure{margin:0}
+.cmp img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:8px;border:1px solid var(--line);cursor:zoom-in;display:block}
+.cmp figcaption{font-size:12px;color:var(--muted)}
+.zoom{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:40;display:grid;place-items:center;padding:16px;cursor:zoom-out}
+.zoom img{max-width:100%;max-height:100%;border-radius:8px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;z-index:50;font-size:14px;max-width:90%}
+.kmwarn{color:var(--warn);font-size:14px;margin-top:4px}
+a{color:var(--accent)}
+.demo{background:var(--info-bg);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:12px;font-size:14px;display:grid;gap:8px}
+.demo-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.demo select{min-height:40px;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 8px;max-width:100%}
+.logrow{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+.logrow:last-child{border-bottom:0}
+.logrow .when{color:var(--muted);white-space:nowrap;font-size:13px}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<div id="sheet"></div>
+<div id="zoom"></div>
+<script type="module">
+import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+import {getAuth,onAuthStateChanged,sendSignInLinkToEmail,isSignInWithEmailLink,signInWithEmailLink,signOut} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
+import {getFirestore,collection,doc,getDoc,addDoc,onSnapshot,query,orderBy,limit,writeBatch,serverTimestamp} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+import {firebaseConfig,ADMINS,EMAIL_APROVACAO as EMAIL_CFG} from './firebase-config.js';
+(function(){
+'use strict';
+var SLOTS=[['painel','Painel com o KM'],['esq','Lateral esquerda'],['dir','Lateral direita'],['frente','Frente'],['tras','Traseira']];
+var LABEL={pendente:'Aguardando aprovação',aprovado:'Aprovado, aguardando retirada',em_uso:'Em uso',atrasado:'Atrasado',devolvido:'Devolvido',recusado:'Recusado',cancelado:'Cancelado',livre:'Disponível',reservado:'Reservado'};
+var EMAIL_APROVACAO=EMAIL_CFG;
+var APP_URL=location.href.split('#')[0].split('?')[0];
+var ACAO={solicitou:'Criou a solicitação',aprovou:'Aprovou',recusou:'Recusou',cancelou:'Cancelou a solicitação',saida:'Registrou a saída',devolucao:'Registrou a devolução',carro_novo:'Cadastrou o carro',carro_ativo:'Colocou na frota o carro',carro_inativo:'Tirou da frota o carro',carro_liberado:'Liberou o carro',usuario_salvo:'Liberou o acesso de',usuario_removido:'Removeu o acesso de'};
+var CAM='<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></svg>';
+var CHK='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>';
+
+var S={db:null,user:null,assets:null,me:null,canApprove:false,canWrite:true,
+  cars:[],requests:[],decisions:{},names:{},tab:'sol',filter:'andamento',
+  sheet:null,sheetSig:'',drafts:{},err:'',loaded:false,logs:{},logSubs:{}};
+var pendingNames={};
+
+function $(s){return document.querySelector(s);}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function dtShort(iso){return iso?new Date(iso).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';}
+function dtFull(iso){return iso?new Date(iso).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}):'—';}
+function kmFmt(n){return n==null?'—':Number(n).toLocaleString('pt-BR')+' km';}
+function validId(id){return typeof id==='string'&&/^[A-Za-z0-9]{20}$/.test(id);}
+function toLocalInput(d){var p=function(n){return String(n).padStart(2,'0');};return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':'+p(d.getMinutes());}
+function toast(msg){var t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(function(){t.remove();},3200);}
+function myId(){return S.me?S.me.id:null;}
+function nameOf(id){if(!id)return '—';if(id===myId())return 'Você';return S.names[id]||'…';}
+function carById(id){for(var i=0;i<S.cars.length;i++){if(S.cars[i].id===id)return S.cars[i];}return null;}
+function reqById(id){for(var i=0;i<S.requests.length;i++){if(S.requests[i].id===id)return S.requests[i];}return null;}
+
+/* ---------- regras de estado ---------- */
+function state(r){
+  var d=S.decisions[r.id];
+  if(r.cancelado)return 'cancelado';
+  if(r.kmVolta!=null)return 'devolvido';
+  if(r.kmSaida!=null)return Date.now()>new Date(r.devolucaoPrev).getTime()?'atrasado':'em_uso';
+  if(!d)return 'pendente';
+  if(d.status==='recusado')return 'recusado';
+  return 'aprovado';
+}
+function lastKm(carId){
+  var best=null;
+  S.requests.forEach(function(r){
+    if(r.carId===carId&&r.kmVolta!=null&&(!best||r.voltaEm>best.t))best={t:r.voltaEm,km:r.kmVolta};
+  });
+  if(best)return best.km;
+  var c=carById(carId);
+  return c?(Number(c.kmInicial)||0):0;
+}
+function kmKnown(carId){
+  var c=carById(carId);if(c&&Number(c.kmInicial)>0)return true;
+  return S.requests.some(function(r){return r.carId===carId&&r.kmVolta!=null;});
+}
+function carStatus(carId){
+  var cc=carById(carId);
+  if(cc&&cc.uso)return {key:'em_uso',r:null,uso:cc.uso};
+  var rs=S.requests.filter(function(r){return r.carId===carId;});
+  var use=rs.filter(function(r){var s=state(r);return s==='em_uso'||s==='atrasado';})[0];
+  if(use)return {key:state(use),r:use};
+  var next=rs.filter(function(r){var s=state(r);return s==='aprovado'||s==='pendente';})
+    .sort(function(a,b){return a.retiradaPrev<b.retiradaPrev?-1:1;})[0];
+  if(next)return {key:'reservado',r:next};
+  return {key:'livre',r:null};
+}
+function effEnd(r){
+  if(state(r)==='atrasado')return new Date(Math.max(Date.now(),new Date(r.devolucaoPrev).getTime())).toISOString();
+  return r.devolucaoPrev;
+}
+function conflicts(carId,ini,fim){
+  return S.requests.filter(function(r){
+    var s=state(r);
+    return r.carId===carId&&(s==='pendente'||s==='aprovado'||s==='em_uso'||s==='atrasado')&&r.retiradaPrev<fim&&effEnd(r)>ini;
+  });
+}
+
+/* ---------- nomes ---------- */
+function ensureNames(){
+  if(!S.user)return;
+  var ids={};
+  S.requests.forEach(function(r){ids[r.requesterId]=1;});
+  Object.keys(S.decisions).forEach(function(k){ids[S.decisions[k].byId]=1;});
+  Object.keys(S.logs).forEach(function(id){ids[id]=1;});
+  var miss=Object.keys(ids).filter(function(id){return id&&id!=='undefined'&&!S.names[id]&&!pendingNames[id];});
+  if(!miss.length)return;
+  miss.forEach(function(id){pendingNames[id]=1;});
+  S.user.profiles(miss).then(function(p){
+    miss.forEach(function(id){S.names[id]=(p&&p[id]&&p[id].name)||'Colega';delete pendingNames[id];});
+    update(true);
+  }).catch(function(){miss.forEach(function(id){S.names[id]='Colega';delete pendingNames[id];});update(true);});
+}
+
+/* ---------- rascunhos ---------- */
+function draftOf(id){
+  if(!S.drafts[id])S.drafts[id]={obs:'',saida:{km:'',obs:'',fotos:{}},devolucao:{km:'',obs:'',fotos:{}}};
+  return S.drafts[id];
+}
+
+/* ---------- renderização ---------- */
+function plate(p){return '<span class="plate"><span>'+esc(p)+'</span></span>';}
+function pill(k){return '<span class="pill '+k+'">'+LABEL[k]+'</span>';}
+function roleLabel(){
+  if(S.canApprove)return 'Você aprova solicitações';
+  if(S.canWrite)return 'Você pode solicitar carros';
+  return 'Somente leitura';
+}
+function renderMain(){
+  if(!S.me){$('#app').innerHTML=authHTML();return;}
+  var pend=S.requests.filter(function(r){return state(r)==='pendente'&&r.requesterId!==myId();}).length;
+  var h='<header class="top"><div><h1>Frota comercial</h1><p class="sub">'+esc(roleLabel())+'</p></div>';
+  if(S.canWrite&&S.canRequest!==false)h+='<button class="btn primary" data-act="new">Nova solicitação</button>';
+  h+='</header>';
+  h+=demoStrip();
+  if(S.err)h+='<div class="banner bad">'+esc(S.err)+'</div>';
+  h+='<nav class="tabs"><button class="tab '+(S.tab==='sol'?'on':'')+'" data-act="tab" data-v="sol">Solicitações'+(S.canApprove&&pend?'<span class="count">'+pend+'</span>':'')+'</button>';
+  h+='<button class="tab '+(S.tab==='frota'?'on':'')+'" data-act="tab" data-v="frota">Frota</button>';
+  if(S.canApprove)h+='<button class="tab '+(S.tab==='log'?'on':'')+'" data-act="tab" data-v="log">Registro</button>';
+  if(S.isAdmin)h+='<button class="tab '+(S.tab==='users'?'on':'')+'" data-act="tab" data-v="users">Pessoas</button>';
+  h+='</nav>';
+  h+=(S.tab==='users'&&S.isAdmin)?usersHTML():(S.tab==='log'&&S.canApprove)?logHTML():S.tab==='frota'?fleetHTML():listHTML();
+  $('#app').innerHTML=h;
+}
+function listHTML(){
+  var F=S.filter;
+  var f=[['andamento','Em andamento'],['pendente','Aguardando aprovação'],['historico','Histórico']];
+  var h='<div class="chips">'+f.map(function(x){return '<button class="chip '+(F===x[0]?'on':'')+'" data-act="filter" data-v="'+x[0]+'">'+x[1]+'</button>';}).join('')+'</div>';
+  if(S.canApprove)h+='<div class="toolbar"><button class="btn" data-act="export">Exportar histórico em CSV</button></div>';
+  var rs=S.requests.filter(function(r){
+    var s=state(r);
+    if(F==='pendente')return s==='pendente';
+    if(F==='historico')return s==='devolvido'||s==='recusado'||s==='cancelado';
+    return s==='aprovado'||s==='em_uso'||s==='atrasado'||s==='pendente';
+  });
+  rs.sort(function(a,b){
+    if(F==='historico')return a.criadoEm<b.criadoEm?1:-1;
+    var pa=state(a)==='atrasado'?0:1,pb=state(b)==='atrasado'?0:1;
+    if(pa!==pb)return pa-pb;
+    return a.retiradaPrev<b.retiradaPrev?-1:1;
+  });
+  if(!rs.length){
+    return h+'<div class="empty">'+(F==='historico'?'Ainda não há solicitações encerradas.':F==='pendente'?'Nenhuma solicitação aguardando aprovação.':'Nenhuma solicitação em andamento. Toque em Nova solicitação para pedir um carro.')+'</div>';
+  }
+  return h+rs.map(function(r){
+    var s=state(r);
+    return '<button class="card" data-act="open" data-id="'+esc(r.id)+'"><div class="row1"><div>'+plate(r.placa)+'<p class="model">'+esc(r.modelo)+'</p></div>'+pill(s)+'</div>'
+      +'<p class="dest">'+esc(r.motivo)+'</p>'
+      +'<p class="meta">'+esc(nameOf(r.requesterId))+' - '+dtShort(r.retiradaPrev)+' até '+dtShort(r.devolucaoPrev)+'</p></button>';
+  }).join('');
+}
+function fleetHTML(){
+  var h='';
+  if(S.canApprove)h+='<div class="toolbar"><button class="btn primary" data-act="car-new">Adicionar carro</button></div>';
+  if(!S.cars.length){
+    return h+'<div class="empty">'+(S.canApprove?'Cadastre os carros da frota para liberar as solicitações.':'A frota ainda não foi cadastrada. Peça a um aprovador para adicionar os carros.')+'</div>';
+  }
+  var cars=S.cars.slice().sort(function(a,b){return String(a.placa).localeCompare(String(b.placa));});
+  return h+cars.map(function(c){
+    var st=carStatus(c.id),ativo=c.ativo!==false;
+    var who=st.uso?'<p class="dest">Com '+esc(st.uso.quem)+' (vendedor externo). '+esc(st.uso.motivo)+'</p>':(st.r&&(st.key==='em_uso'||st.key==='atrasado')?'<p class="dest">Com '+esc(nameOf(st.r.requesterId))+', devolução prevista '+dtShort(st.r.devolucaoPrev)+'</p>':'');
+    var link='';
+    if(c.rastreadorUrl&&/^https?:\/\//i.test(c.rastreadorUrl))link='<a href="'+esc(c.rastreadorUrl)+'" target="_blank" rel="noopener noreferrer">Ver no rastreador</a>';
+    var act=S.canApprove?(c.uso?'<button class="btn primary" data-act="free-car" data-id="'+esc(c.id)+'">Carro devolvido, liberar</button>':'')+'<button class="btn" data-act="toggle-car" data-id="'+esc(c.id)+'">'+(ativo?'Tirar da frota':'Voltar para a frota')+'</button>':'';
+    return '<div class="card static" style="'+(ativo?'':'opacity:.55')+'"><div class="row1"><div>'+plate(c.placa)+'<p class="model">'+esc(c.modelo)+'</p></div>'+(ativo?pill(st.key):'<span class="pill cancelado">Fora da frota</span>')+'</div>'
+      +who+'<p class="meta">Último KM registrado: '+(kmKnown(c.id)?kmFmt(lastKm(c.id)):'ainda não informado')+(link?' - '+link:'')+'</p>'+(act?'<div class="row" style="margin-top:10px">'+act+'</div>':'')+'</div>';
+  }).join('');
+}
+
+/* ---------- folha (detalhe e formulários) ---------- */
+function openSheet(s){S.sheet=s;S.sheetSig='';document.body.classList.add('noscroll');renderSheet();}
+function closeSheet(){S.sheet=null;document.body.classList.remove('noscroll');$('#sheet').innerHTML='';}
+function sheetShell(title,body){
+  return '<div class="sheet-back" data-act="close"></div><section class="sheet" role="dialog" aria-modal="true" aria-label="'+esc(title)+'"><div class="sheet-head"><h2>'+esc(title)+'</h2><button class="btn" data-act="close">Fechar</button></div><div class="sheet-body" id="sheet-body">'+body+'<div id="sheet-err"></div></div></section>';
+}
+function sheetErr(msg){var e=$('#sheet-err');if(e)e.innerHTML=msg?'<div class="banner bad" style="margin-top:12px">'+esc(msg)+'</div>':'';}
+function renderSheet(){
+  var s=S.sheet;if(!s)return;
+  var html='';
+  if(s.type==='detail'){
+    var r=reqById(s.id);
+    if(!r){closeSheet();return;}
+    html=sheetShell('Solicitação',detailHTML(r));
+    S.sheetSig=sigFor(r);
+  }else if(s.type==='new'){html=sheetShell('Nova solicitação',newHTML());}
+  else if(s.type==='car'){html=sheetShell('Adicionar carro',carFormHTML());}
+  else if(s.type==='sent'){html=sheetShell('Solicitação enviada',sentHTML(s));}
+  var prev=$('.sheet-body');var top=prev?prev.scrollTop:0;
+  $('#sheet').innerHTML=html;
+  var nb=$('.sheet-body');if(nb&&s.type==='detail')nb.scrollTop=top;
+  if(s.type==='new')calcWarn();
+  hydratePhotos();
+}
+function sigFor(r){return JSON.stringify([r,S.decisions[r.id]||null,Object.keys(S.names).length,logFor(r.id).length]);}
+
+function photoGrid(map){
+  return '<div class="pgrid">'+SLOTS.map(function(x){
+    var id=map&&map[x[0]];
+    return validId(id)?'<figure><img data-act="zoom" data-pid="'+id+'" src="'+blobUrl(id)+'" alt="'+x[1]+'" loading="lazy"><figcaption>'+x[1]+'</figcaption></figure>'
+      :'<figure class="miss"><span>Sem foto</span><figcaption>'+x[1]+'</figcaption></figure>';
+  }).join('')+'</div>';
+}
+function locLine(loc){
+  if(loc&&typeof loc.lat==='number'&&typeof loc.lng==='number')return '<a href="https://www.google.com/maps?q='+loc.lat+','+loc.lng+'" target="_blank" rel="noopener noreferrer">Ver local no mapa</a>';
+  return 'Localização do celular não registrada';
+}
+function slotInner(kind,k,label,f){
+  var body;
+  if(!f)body='<span class="cam">'+CAM+'</span><span class="lab">'+label+'</span>';
+  else if(f.state==='up')body='<span class="lab">Enviando…</span>';
+  else if(f.state==='err')body='<span class="lab err">Falhou. Toque para tentar de novo</span>';
+  else body='<img src="'+f.preview+'" alt="'+label+'"><span class="ok-badge">'+CHK+'</span><span class="lab on">'+label+'</span>';
+  return body+'<input type="file" accept="image/*" capture="environment" data-photo="'+kind+':'+k+'" aria-label="'+label+'">';
+}
+function slotsHTML(kind,dr){
+  return '<div class="slots">'+SLOTS.map(function(x){
+    var f=dr[kind].fotos[x[0]];
+    return '<label class="slot'+(f&&f.state==='ok'?' done':'')+'" id="slot-'+kind+'-'+x[0]+'">'+slotInner(kind,x[0],x[1],f)+'</label>';
+  }).join('')+'</div>';
+}
+function canSubmit(kind,dr){
+  var d=dr[kind],km=parseInt(d.km,10);
+  if(!S.assets||isNaN(km)||km<0)return false;
+  return SLOTS.every(function(x){return d.fotos[x[0]]&&d.fotos[x[0]].state==='ok';});
+}
+function refreshSlot(kind,k,id){
+  var dr=draftOf(id),el=document.getElementById('slot-'+kind+'-'+k);if(!el)return;
+  var label=SLOTS.filter(function(x){return x[0]===k;})[0][1];
+  var f=dr[kind].fotos[k];
+  el.className='slot'+(f&&f.state==='ok'?' done':'');
+  el.innerHTML=slotInner(kind,k,label,f);
+  refreshSubmit(kind,id);
+}
+function refreshSubmit(kind,id){
+  var b=document.getElementById('submit-'+kind);
+  if(b)b.disabled=!canSubmit(kind,draftOf(id));
+}
+function detailHTML(r){
+  var st=state(r),dec=S.decisions[r.id],mine=r.requesterId===myId(),canAct=S.canWrite&&(mine||S.canApprove),dr=draftOf(r.id);
+  var occ=S.requests.filter(function(x){return x.id!==r.id&&x.carId===r.carId&&(state(x)==='em_uso'||state(x)==='atrasado');})[0];
+  var occCar=carById(r.carId),occQuem=occ?nameOf(occ.requesterId):(occCar&&occCar.uso?occCar.uso.quem+' (vendedor externo)':'');
+  var h='<div class="head"><div>'+plate(r.placa)+'<p class="model">'+esc(r.modelo)+'</p></div>'+pill(st)+'</div>';
+  h+='<dl class="facts"><div><dt>Solicitante</dt><dd>'+esc(nameOf(r.requesterId))+'</dd></div>'
+    +'<div><dt>Solicitado em</dt><dd>'+dtFull(r.criadoEm)+'</dd></div>'
+    +'<div><dt>Retirada prevista</dt><dd>'+dtFull(r.retiradaPrev)+'</dd></div>'
+    +'<div><dt>Devolução prevista</dt><dd>'+dtFull(r.devolucaoPrev)+'</dd></div>'
+    +'<div><dt>Cliente ou destino</dt><dd>'+esc(r.motivo)+'</dd></div>'
+    +(r.obs?'<div><dt>Observações</dt><dd>'+esc(r.obs)+'</dd></div>':'')+'</dl>';
+
+  if(dec){
+    h+='<section class="blk"><h3>'+(dec.status==='recusado'?'Recusada':'Aprovada')+'</h3><p class="hint">Por '+esc(nameOf(dec.byId))+' em '+dtFull(dec.em)+(dec.obs?'. Comentário: '+esc(dec.obs):'')+'</p></section>';
+  }else if(st==='pendente'){
+    if(S.canApprove&&S.canWrite&&!mine){
+      h+='<section class="blk"><h3>Sua decisão</h3><p class="hint">Aprove para liberar a retirada. O solicitante só consegue retirar depois de enviar as fotos do carro.</p>'
+        +'<label class="field"><span>Comentário (opcional)</span><textarea data-in="obs">'+esc(dr.obs)+'</textarea></label>'
+        +'<div class="row"><button class="btn ok" data-act="approve" data-id="'+esc(r.id)+'">Aprovar</button><button class="btn danger" data-act="refuse" data-id="'+esc(r.id)+'">Recusar</button></div></section>';
+    }else{
+      h+='<div class="banner info">'+(mine&&S.canApprove?'Você não pode aprovar a sua própria solicitação. Outro aprovador precisa decidir.':'Aguardando aprovação do comercial. Volte aqui depois da aprovação para registrar a retirada.')+'</div>';
+    }
+  }
+
+  if(st==='aprovado'&&canAct){
+    h+='<section class="blk"><h3>Retirada do carro</h3><p class="hint">Para pegar o carro, informe o KM do painel e envie as 5 fotos. Elas ficam registradas para o caso de multa, batida ou conserto.</p>'
+      +(occQuem?'<div class="banner warn">Este carro ainda está com '+esc(occQuem)+'. A retirada só libera depois da devolução.</div>':'')
+      +'<label class="field"><span>KM no painel</span><input type="number" inputmode="numeric" min="0" data-in="km-saida" value="'+esc(dr.saida.km)+'" placeholder="Número do painel"><small>'+(kmKnown(r.carId)?'Último KM registrado: '+kmFmt(lastKm(r.carId)):'Primeiro registro deste carro')+'</small><div class="kmwarn" id="kmwarn-saida"></div></label>'
+      +slotsHTML('saida',dr)
+      +'<label class="field"><span>Avarias que o carro já tinha (opcional)</span><textarea data-in="obs-saida">'+esc(dr.saida.obs)+'</textarea></label>'
+      +(S.assets?'':'<div class="banner warn">O envio de fotos não está disponível neste acesso. Abra o app pelo link compartilhado.</div>')
+      +'<button class="btn primary block" id="submit-saida" data-act="save-out" data-id="'+esc(r.id)+'"'+(canSubmit('saida',dr)?'':' disabled')+'>Registrar saída</button></section>';
+  }
+  if(r.kmSaida!=null){
+    h+='<section class="blk"><h3>Saída</h3><p class="hint">'+dtFull(r.saidaEm)+' - '+kmFmt(r.kmSaida)+' - '+locLine(r.saidaLoc)+'</p>'
+      +(r.obsSaida?'<p class="hint">Avarias já existentes: '+esc(r.obsSaida)+'</p>':'')+photoGrid(r.fotosSaida)+'</section>';
+  }
+  if((st==='em_uso'||st==='atrasado')&&canAct){
+    h+='<section class="blk"><h3>Devolução do carro</h3><p class="hint">Ao devolver, informe o KM e envie as mesmas 5 fotos. Assim dá para comparar com a saída.</p>'
+      +'<label class="field"><span>KM no painel</span><input type="number" inputmode="numeric" min="'+r.kmSaida+'" data-in="km-volta" value="'+esc(dr.devolucao.km)+'" placeholder="Maior ou igual a '+r.kmSaida+'"></label>'
+      +slotsHTML('devolucao',dr)
+      +'<label class="field"><span>Ocorrências ou avarias durante o uso (opcional)</span><textarea data-in="obs-volta">'+esc(dr.devolucao.obs)+'</textarea></label>'
+      +(S.assets?'':'<div class="banner warn">O envio de fotos não está disponível neste acesso. Abra o app pelo link compartilhado.</div>')
+      +'<button class="btn primary block" id="submit-devolucao" data-act="save-in" data-id="'+esc(r.id)+'"'+(canSubmit('devolucao',dr)?'':' disabled')+'>Registrar devolução</button></section>';
+  }
+  if(r.kmVolta!=null){
+    var rod=r.kmVolta-r.kmSaida;
+    h+='<section class="blk"><h3>Devolução</h3><p class="hint">'+dtFull(r.voltaEm)+' - '+kmFmt(r.kmVolta)+' - rodou '+kmFmt(rod)+' - '+locLine(r.voltaLoc)+'</p>'
+      +(r.obsVolta?'<p class="hint">Ocorrências: '+esc(r.obsVolta)+'</p>':'')+photoGrid(r.fotosVolta)+'</section>';
+    h+='<section class="blk"><h3>Saída e devolução lado a lado</h3><div class="cmp">'+SLOTS.map(function(x){
+      var a=r.fotosSaida&&r.fotosSaida[x[0]],b=r.fotosVolta&&r.fotosVolta[x[0]];
+      function im(id,t){return validId(id)?'<figure><img data-act="zoom" data-pid="'+id+'" src="'+blobUrl(id)+'" alt="'+x[1]+' '+t+'" loading="lazy"><figcaption>'+t+'</figcaption></figure>':'<figure><figcaption>'+t+': sem foto</figcaption></figure>';}
+      return '<h4>'+x[1]+'</h4>'+im(a,'Saída')+im(b,'Devolução');
+    }).join('')+'</div></section>';
+  }
+  if(S.canApprove){
+    var lg=logFor(r.id);
+    h+='<section class="blk"><h3>Registro de alterações</h3>'+(lg.length?logRows(lg):'<p class="hint">Nenhuma ação registrada para esta solicitação.</p>')+'</section>';
+  }
+  if((st==='pendente'||st==='aprovado')&&S.canWrite&&(mine||S.canApprove)){
+    h+='<button class="btn danger block" data-act="cancel" data-id="'+esc(r.id)+'">Cancelar solicitação</button>';
+  }
+  return h;
+}
+function newHTML(){
+  var cars=S.cars.filter(function(c){return c.ativo!==false;});
+  if(!cars.length)return '<div class="empty">Ainda não há carros cadastrados. Peça a um aprovador para adicionar os carros na aba Frota.</div>';
+  var now=new Date();now.setMinutes(Math.ceil(now.getMinutes()/5)*5,0,0);
+  var end=new Date(now.getTime()+3*3600*1000);
+  var opts=cars.map(function(c){var k=carStatus(c.id).key;return '<option value="'+esc(c.id)+'">'+esc(c.placa)+' - '+esc(c.modelo)+' ('+LABEL[k].toLowerCase()+')</option>';}).join('');
+  return '<label class="field"><span>Carro</span><select id="f-car" data-chg="warn">'+opts+'</select></label>'
+    +'<label class="field"><span>Retirada prevista</span><input type="datetime-local" id="f-ini" data-chg="warn" value="'+toLocalInput(now)+'"></label>'
+    +'<label class="field"><span>Devolução prevista</span><input type="datetime-local" id="f-fim" data-chg="warn" value="'+toLocalInput(end)+'"></label>'
+    +'<div id="f-warn"></div>'
+    +'<label class="field"><span>Cliente ou destino</span><input id="f-motivo" placeholder="Ex.: visita ao cliente em Campinas"></label>'
+    +'<label class="field"><span>Observações (opcional)</span><textarea id="f-obs"></textarea></label>'
+    +'<button class="btn primary block" data-act="send-new">Enviar solicitação</button>';
+}
+function calcWarn(){
+  var w=$('#f-warn');if(!w)return;
+  var car=$('#f-car').value,ini=$('#f-ini').value,fim=$('#f-fim').value;
+  if(!car||!ini||!fim){w.innerHTML='';return;}
+  var a=new Date(ini),b=new Date(fim);
+  if(!(b>a)){w.innerHTML='<div class="banner warn">A devolução precisa ser depois da retirada.</div>';return;}
+  var cu=carById(car),pre=(cu&&cu.uso)?'<div class="banner warn">Este carro está com '+esc(cu.uso.quem)+' (vendedor externo). A solicitação entra na fila e a retirada só libera depois que um aprovador liberar o carro.</div>':'';
+  var c=conflicts(car,a.toISOString(),b.toISOString());
+  w.innerHTML=pre+(c.length?'<div class="banner warn">Este carro já tem '+c.length+' solicitação'+(c.length>1?'ões':'')+' nesse horário. Você pode enviar mesmo assim, mas o aprovador vai ver o conflito.</div>':'');
+}
+function carFormHTML(){
+  return '<label class="field"><span>Placa</span><input id="c-placa" autocapitalize="characters" placeholder="ABC1D23"></label>'
+    +'<label class="field"><span>Modelo</span><input id="c-modelo" placeholder="Ex.: Fiat Argo branco"></label>'
+    +'<label class="field"><span>KM atual</span><input id="c-km" type="number" inputmode="numeric" min="0"></label>'
+    +'<label class="field"><span>Link do rastreador (opcional)</span><input id="c-url" type="url" placeholder="https://"><small>Se a plataforma do rastreador tiver um link por veículo, cole aqui.</small></label>'
+    +'<button class="btn primary block" data-act="save-car">Salvar carro</button>';
+}
+function sentHTML(s){
+  var subject='Solicitação de carro: '+s.placa+' - '+s.quem;
+  var body='Solicitante: '+s.quem+'\nCarro: '+s.placa+' - '+s.modelo+'\nRetirada: '+dtFull(s.ini)+'\nDevolução: '+dtFull(s.fim)+'\nDestino: '+s.motivo+'\n\nAbra o app Frota comercial para aprovar ou recusar: '+APP_URL;
+  var href='mailto:'+EMAIL_APROVACAO+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
+  var h='<div class="banner info">A solicitação foi registrada e aparece para os aprovadores no app.</div>';
+  if(s.mail==='sending')h+='<p>Enviando o aviso por e-mail para '+esc(EMAIL_APROVACAO)+'…</p>';
+  else if(s.mail==='demo')h+='<div class="banner warn">Nesta versão para validação, nenhum e-mail é enviado de verdade. Na versão final, esta mensagem sai automaticamente para '+esc(EMAIL_APROVACAO)+':</div><div class="blk"><h3>'+esc(subject)+'</h3><p class="hint" style="white-space:pre-line;margin:0">'+esc(body)+'</p></div>';
+  else if(s.mail==='auto')h+='<div class="banner" style="background:var(--ok-bg);color:var(--ok)">Aviso enviado por e-mail para '+esc(EMAIL_APROVACAO)+'.</div>';
+  else h+='<div class="banner info">Para avisar os aprovadores por e-mail, toque no botão abaixo. Seu aplicativo de e-mail abre com a mensagem pronta para '+esc(EMAIL_APROVACAO)+'.</div>'
+    +'<p><a class="btn primary block" style="display:block;text-align:center;text-decoration:none;line-height:24px" href="'+esc(href)+'" target="_blank" rel="noopener noreferrer">Avisar por e-mail</a></p>';
+  return h+'<p style="margin-top:12px"><button class="btn block" data-act="close">Fechar</button></p>';
+}
+
+/* ---------- fotos e localização ---------- */
+function compress(file){
+  return new Promise(function(res,rej){
+    var img=new Image(),u=URL.createObjectURL(file);
+    img.onload=function(){
+      var w=img.naturalWidth,h=img.naturalHeight,k=Math.min(1,1280/Math.max(w,h));
+      w=Math.round(w*k);h=Math.round(h*k);
+      var c=document.createElement('canvas');c.width=w;c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      URL.revokeObjectURL(u);
+      c.toBlob(function(b){b?res(b):rej(new Error('compress'));},'image/jpeg',0.65);
+    };
+    img.onerror=function(){URL.revokeObjectURL(u);rej(new Error('img'));};
+    img.src=u;
+  });
+}
+function onPhoto(kind,k,file,id){
+  var dr=draftOf(id);
+  var f={state:'up',preview:URL.createObjectURL(file)};
+  dr[kind].fotos[k]=f;refreshSlot(kind,k,id);
+  if(!S.assets){f.state='err';refreshSlot(kind,k,id);return;}
+  compress(file).then(function(blob){return S.assets.upload(blob);}).then(function(r){
+    dr[kind].fotos[k]={state:'ok',id:r.id,preview:f.preview};refreshSlot(kind,k,id);
+  }).catch(function(){dr[kind].fotos[k]={state:'err',preview:f.preview};refreshSlot(kind,k,id);});
+}
+function getLoc(){
+  return new Promise(function(res){
+    if(!navigator.geolocation)return res(null);
+    var done=false,t=setTimeout(function(){if(!done){done=true;res(null);}},8500);
+    try{navigator.geolocation.getCurrentPosition(function(p){if(done)return;done=true;clearTimeout(t);res({lat:+p.coords.latitude.toFixed(5),lng:+p.coords.longitude.toFixed(5)});},function(){if(done)return;done=true;clearTimeout(t);res(null);},{timeout:8000,maximumAge:60000});}
+    catch(e){if(!done){done=true;clearTimeout(t);res(null);}}
+  });
+}
+function fotoIds(map){var o={};SLOTS.forEach(function(x){if(map[x[0]]&&map[x[0]].id)o[x[0]]=map[x[0]].id;});return o;}
+
+/* ---------- registro de alterações ---------- */
+function logAct(acao,reqId,placa,detalhe){
+  var id=myId();
+  if(!id||!S.db)return Promise.reject({code:'no_id'});
+  pendingLog={t:SRV(),acao:acao,reqId:reqId||'',placa:placa||'',detalhe:detalhe||{},autor:id,autorNome:(S.me&&S.me.name)||''};
+  return Promise.resolve();
+}
+function allLog(){
+  var a=[];Object.keys(S.logs).forEach(function(k){a=a.concat(S.logs[k]);});
+  return a.sort(function(x,y){return x.t<y.t?1:-1;});
+}
+function logFor(reqId){return allLog().filter(function(e){return e.reqId===reqId;}).reverse();}
+function logText(e){
+  var d=e.detalhe||{},x='';
+  if(e.acao==='usuario_salvo'||e.acao==='usuario_removido')x=' '+(d.nome||'')+' ('+(d.email||'')+')';
+  if(e.acao==='saida'||e.acao==='devolucao')x=' - '+kmFmt(d.km);
+  if((e.acao==='aprovou'||e.acao==='recusou')&&d.obs)x=' - '+d.obs;
+  if(e.acao==='solicitou')x=' - '+(d.destino||'');
+  if(e.acao==='carro_novo')x=' - '+(d.modelo||'')+', '+kmFmt(d.km);
+  return (ACAO[e.acao]||e.acao)+(e.placa?' '+e.placa:'')+x;
+}
+function logRows(list){
+  return list.map(function(e){return '<div class="logrow"><div><b>'+esc(nameOf(e.ator))+'</b> - '+esc(logText(e))+'</div><div class="when">'+dtFull(e.t)+'</div></div>';}).join('');
+}
+function logHTML(){
+  var l=allLog();
+  var h='<p class="sub" style="margin-bottom:10px">Tudo que cada pessoa faz no app fica registrado com o nome dela. Os horários vêm do servidor, e ninguém consegue apagar ou alterar uma linha do registro.</p><div class="toolbar"><button class="btn" data-act="export-log">Exportar registro em CSV</button></div>';
+  if(!l.length)return h+'<div class="empty">Ainda não há ações registradas.</div>';
+  return h+'<div class="blk">'+logRows(l.slice(0,300))+'</div>';
+}
+function notifyEmail(s){return Promise.resolve('manual');}
+function saveText(filename,text){
+  try{
+    var blob=new Blob([text],{type:'text/csv;charset=utf-8'}),u=URL.createObjectURL(blob),a=document.createElement('a');
+    a.href=u;a.download=filename;document.body.appendChild(a);a.click();a.remove();
+    setTimeout(function(){URL.revokeObjectURL(u);},2000);
+  }catch(e){toast('Não foi possível salvar o arquivo.');}
+}
+
+/* ---------- ações ---------- */
+function busy(btn,txt){if(btn){btn.disabled=true;btn.dataset.t=btn.textContent;btn.textContent=txt;}}
+function idle(btn){if(btn){btn.disabled=false;if(btn.dataset.t)btn.textContent=btn.dataset.t;}}
+function failMsg(e){if(e&&e.code==='no_id')return 'Não consegui identificar você. Abra o app pelo link no Claude, com a sua conta.';return 'Não foi possível salvar'+(e&&e.code==='invalid_argument'?': você não tem permissão para esta ação.':'. Nada foi alterado. Verifique a conexão e tente de novo.');}
+
+var actions={
+  tab:function(t){S.tab=t.dataset.v;renderMain();},
+  filter:function(t){S.filter=t.dataset.v;renderMain();},
+  open:function(t){openSheet({type:'detail',id:t.dataset.id});},
+  close:function(){closeSheet();},
+  'new':function(){openSheet({type:'new'});},
+  'car-new':function(){openSheet({type:'car'});},
+  zoom:function(t){var z=$('#zoom');z.innerHTML='<div class="zoom" data-act="unzoom"><img src="'+esc(t.getAttribute('src')||'')+'" alt="Foto ampliada"></div>';},
+  unzoom:function(){$('#zoom').innerHTML='';},
+  'send-new':function(t){
+    var car=carById($('#f-car').value),ini=$('#f-ini').value,fim=$('#f-fim').value,motivo=$('#f-motivo').value.trim(),obs=$('#f-obs').value.trim();
+    if(!car)return sheetErr('Escolha um carro.');
+    if(!ini||!fim)return sheetErr('Informe a retirada e a devolução previstas.');
+    var a=new Date(ini),b=new Date(fim);
+    if(!(b>a))return sheetErr('A devolução precisa ser depois da retirada.');
+    if(!motivo)return sheetErr('Informe o cliente ou o destino.');
+    sheetErr('');busy(t,'Enviando…');
+    var ref=S.db.collection('requests').doc();
+    var data={carId:car.id,placa:car.placa,modelo:car.modelo,requesterId:myId(),requesterName:(S.me&&S.me.name)||'',motivo:motivo,obs:obs,retiradaPrev:a.toISOString(),devolucaoPrev:b.toISOString(),criadoEm:SRV()};
+    logAct('solicitou',ref.id,car.placa,{retirada:data.retiradaPrev,devolucao:data.devolucaoPrev,destino:motivo,obs:obs})
+      .then(function(){return ref.set(data);})
+      .then(function(){
+        var info={type:'sent',placa:car.placa,modelo:car.modelo,quem:(S.me&&S.me.name)||'Solicitante',ini:data.retiradaPrev,fim:data.devolucaoPrev,motivo:motivo,mail:'sending',rid:ref.id};
+        S.sheet=info;renderSheet();
+        notifyEmail(info).then(function(res){
+          if(S.sheet&&S.sheet.type==='sent'&&S.sheet.rid===info.rid){S.sheet.mail=res;renderSheet();}
+        });
+      }).catch(function(e){idle(t);sheetErr(failMsg(e));});
+  },
+  'save-car':function(t){
+    var placa=$('#c-placa').value.trim().toUpperCase(),modelo=$('#c-modelo').value.trim(),km=parseInt($('#c-km').value,10),url=$('#c-url').value.trim();
+    if(!placa||!modelo||isNaN(km)||km<0)return sheetErr('Preencha placa, modelo e KM atual.');
+    if(url&&!/^https?:\/\//i.test(url))return sheetErr('O link do rastreador precisa começar com http:// ou https://.');
+    if(S.cars.some(function(c){return String(c.placa).toUpperCase()===placa;}))return sheetErr('Esta placa já está cadastrada.');
+    sheetErr('');busy(t,'Salvando…');
+    logAct('carro_novo','',placa,{modelo:modelo,km:km})
+      .then(function(){return S.db.collection('cars').add({placa:placa,modelo:modelo,kmInicial:km,rastreadorUrl:url,ativo:true,criadoEm:SRV()});})
+      .then(function(){closeSheet();toast('Carro adicionado.');})
+      .catch(function(e){idle(t);sheetErr(failMsg(e));});
+  },
+  'toggle-car':function(t){
+    var c=carById(t.dataset.id);if(!c)return;
+    var ativar=c.ativo===false;
+    logAct(ativar?'carro_ativo':'carro_inativo','',c.placa,{})
+      .then(function(){return S.db.doc('cars/'+c.id).update({ativo:ativar});})
+      .catch(function(e){toast(failMsg(e));});
+  },
+  'free-car':function(t){
+    var c=carById(t.dataset.id);if(!c)return;
+    logAct('carro_liberado','',c.placa,{estava:c.uso?c.uso.quem:''})
+      .then(function(){return S.db.doc('cars/'+c.id).update({uso:null});})
+      .then(function(){toast('Carro liberado para solicitações.');})
+      .catch(function(e){toast(failMsg(e));});
+  },
+  approve:function(t){decide(t,'aprovado');},
+  refuse:function(t){decide(t,'recusado');},
+  cancel:function(t){
+    if(!window.confirm('Cancelar esta solicitação?'))return;
+    var id=t.dataset.id,r=reqById(id);
+    busy(t,'Cancelando…');
+    logAct('cancelou',id,r?r.placa:'',{estado:r?state(r):''})
+      .then(function(){return S.db.doc('requests/'+id).update({cancelado:true,canceladoEm:SRV(),canceladoPor:myId()});})
+      .then(function(){closeSheet();toast('Solicitação cancelada.');})
+      .catch(function(e){idle(t);sheetErr(failMsg(e));});
+  },
+  'save-out':function(t){
+    var id=t.dataset.id,r=reqById(id),dr=draftOf(id),d=dr.saida,km=parseInt(d.km,10);
+    if(!canSubmit('saida',dr))return sheetErr('Informe o KM e envie as 5 fotos.');
+    var emUso=S.requests.filter(function(x){return x.id!==id&&r&&x.carId===r.carId&&(state(x)==='em_uso'||state(x)==='atrasado');})[0];
+    if(emUso)return sheetErr('Este carro ainda está com '+nameOf(emUso.requesterId)+'. A retirada só libera depois da devolução.');
+    var cc=r&&carById(r.carId);
+    if(cc&&cc.uso)return sheetErr('Este carro ainda está com '+cc.uso.quem+' (vendedor externo). Um aprovador precisa liberar o carro antes.');
+    sheetErr('');busy(t,'Registrando…');
+    var fotos=fotoIds(d.fotos);
+    getLoc().then(function(loc){
+      return logAct('saida',id,r?r.placa:'',{km:km,fotos:fotos,loc:loc,obs:d.obs.trim()}).then(function(){
+        return S.db.doc('requests/'+id).update({kmSaida:km,saidaEm:SRV(),saidaLoc:loc,saidaPor:myId(),fotosSaida:fotos,obsSaida:d.obs.trim()});
+      });
+    }).then(function(){toast('Saída registrada. Bom trabalho!');S.sheetSig='';}).catch(function(e){idle(t);sheetErr(failMsg(e));});
+  },
+  'save-in':function(t){
+    var id=t.dataset.id,r=reqById(id),dr=draftOf(id),d=dr.devolucao,km=parseInt(d.km,10);
+    if(!canSubmit('devolucao',dr))return sheetErr('Informe o KM e envie as 5 fotos.');
+    if(r&&km<r.kmSaida)return sheetErr('O KM da devolução não pode ser menor que o da saída ('+kmFmt(r.kmSaida)+').');
+    sheetErr('');busy(t,'Registrando…');
+    var fotos=fotoIds(d.fotos);
+    getLoc().then(function(loc){
+      return logAct('devolucao',id,r?r.placa:'',{km:km,fotos:fotos,loc:loc,obs:d.obs.trim()}).then(function(){
+        return S.db.doc('requests/'+id).update({kmVolta:km,voltaEm:SRV(),voltaLoc:loc,voltaPor:myId(),fotosVolta:fotos,obsVolta:d.obs.trim()});
+      });
+    }).then(function(){toast('Devolução registrada.');S.sheetSig='';}).catch(function(e){idle(t);sheetErr(failMsg(e));});
+  },
+  'export':function(){exportCsv();},
+  'send-link':function(){sendLink($('#a-email').value);},
+  'confirm-link':function(){var e=($('#a-email').value||'').trim().toLowerCase();if(e)finishLink(e);},
+  'auth-back':function(){S.auth='out';S.authMsg='';renderMain();},
+  logout:function(){signOut(fauth);},
+  'add-user':function(t){
+    var nome=$('#u-nome').value.trim(),email=$('#u-email').value.trim().toLowerCase(),papel=$('#u-papel').value;
+    var er=function(m){$('#u-err').innerHTML='<div class="banner bad" style="margin-top:12px">'+esc(m)+'</div>';};
+    if(!nome)return er('Informe o nome.');
+    if(!/^[^@\s]+@gtf\.com\.br$/.test(email))return er('Use o e-mail da GTF, terminado em @gtf.com.br.');
+    busy(t,'Salvando…');
+    logAct('usuario_salvo','','',{nome:nome,email:email,papel:papel})
+      .then(function(){return S.db.doc('users/'+email).set({nome:nome,papel:papel});})
+      .then(function(){$('#u-nome').value='';$('#u-email').value='';idle(t);toast('Pessoa liberada.');})
+      .catch(function(e){idle(t);er(failMsg(e));});
+  },
+  'del-user':function(t){
+    var email=t.dataset.id,u=(S.users||[]).filter(function(x){return x.id===email;})[0];
+    if(!window.confirm('Remover o acesso de '+(u?u.nome:email)+'?'))return;
+    logAct('usuario_removido','','',{nome:u?u.nome:'',email:email})
+      .then(function(){return S.db.doc('users/'+email).remove();})
+      .then(function(){toast('Acesso removido.');})
+      .catch(function(e){toast(failMsg(e));});
+  },
+  'export-log':function(){
+    function q(v){return '"'+String(v==null?'':v).replace(/"/g,'""')+'"';}
+    var rows=[['Data e hora','Quem','Ação','Placa','Detalhes']];
+    allLog().forEach(function(e){rows.push([dtFull(e.t),nameOf(e.ator),ACAO[e.acao]||e.acao,e.placa,JSON.stringify(e.detalhe||{})]);});
+    saveText('frota-comercial-registro.csv','\uFEFF'+rows.map(function(r){return r.map(q).join(';');}).join('\r\n'));
+  }
+};
+function decide(t,status){
+  var id=t.dataset.id,dr=draftOf(id),r=reqById(id),prev=S.decisions[id],obs=(dr.obs||'').trim();
+  if(r&&r.requesterId===myId())return sheetErr('Você não pode aprovar ou recusar a sua própria solicitação.');
+  busy(t,'Salvando…');
+  logAct(status==='aprovado'?'aprovou':'recusou',id,r?r.placa:'',{obs:obs,anterior:prev?prev.status:null})
+    .then(function(){return S.db.doc('decisions/'+id).set({status:status,byId:myId(),byName:(S.me&&S.me.name)||'',em:SRV(),obs:obs});})
+    .then(function(){toast(status==='aprovado'?'Solicitação aprovada.':'Solicitação recusada.');})
+    .catch(function(e){idle(t);sheetErr(failMsg(e));});
+}
+function exportCsv(){
+  function q(v){return '"'+String(v==null?'':v).replace(/"/g,'""')+'"';}
+  var rows=[['Solicitado em','Placa','Modelo','Solicitante','Retirada prevista','Devolução prevista','Destino','Status','KM saída','Saída em','KM volta','Volta em','KM rodados','Avarias na saída','Ocorrências na devolução']];
+  S.requests.slice().sort(function(a,b){return a.criadoEm<b.criadoEm?1:-1;}).forEach(function(r){
+    rows.push([dtFull(r.criadoEm),r.placa,r.modelo,nameOf(r.requesterId),dtFull(r.retiradaPrev),dtFull(r.devolucaoPrev),r.motivo,LABEL[state(r)],r.kmSaida,r.saidaEm?dtFull(r.saidaEm):'',r.kmVolta,r.voltaEm?dtFull(r.voltaEm):'',r.kmVolta!=null?r.kmVolta-r.kmSaida:'',r.obsSaida,r.obsVolta]);
+  });
+  var text='\uFEFF'+rows.map(function(r){return r.map(q).join(';');}).join('\r\n');
+  saveText('frota-comercial-historico.csv',text);
+}
+
+/* ---------- eventos ---------- */
+document.addEventListener('click',function(e){
+  var t=e.target.closest('[data-act]');if(!t)return;
+  var a=actions[t.dataset.act];if(a)a(t,e);
+});
+document.addEventListener('input',function(e){
+  var t=e.target,k=t.dataset&&t.dataset.in;if(!k||!S.sheet||S.sheet.type!=='detail')return;
+  var dr=draftOf(S.sheet.id);
+  if(k==='obs')dr.obs=t.value;
+  else if(k==='obs-saida')dr.saida.obs=t.value;
+  else if(k==='obs-volta')dr.devolucao.obs=t.value;
+  else if(k==='km-saida'){
+    dr.saida.km=t.value;refreshSubmit('saida',S.sheet.id);
+    var r=reqById(S.sheet.id),w=$('#kmwarn-saida'),n=parseInt(t.value,10);
+    if(w&&r)w.textContent=(!isNaN(n)&&n<lastKm(r.carId))?'Este KM é menor que o último registrado ('+kmFmt(lastKm(r.carId))+'). Confira o painel.':'';
+  }else if(k==='km-volta'){dr.devolucao.km=t.value;refreshSubmit('devolucao',S.sheet.id);}
+});
+document.addEventListener('change',function(e){
+  var t=e.target;
+  if(t.dataset&&t.dataset.photo&&S.sheet&&S.sheet.type==='detail'){
+    var p=t.dataset.photo.split(':'),file=t.files&&t.files[0];
+    if(file)onPhoto(p[0],p[1],file,S.sheet.id);
+    return;
+  }
+  if(t.dataset&&t.dataset.chg==='warn')calcWarn();
+});
+
+/* ---------- dados ---------- */
+function update(namesOnly){
+  renderMain();
+  var s=S.sheet;
+  if(s&&s.type==='detail'){
+    var r=reqById(s.id);
+    if(!r){closeSheet();return;}
+    if(sigFor(r)!==S.sheetSig)renderSheet();
+  }
+  if(!namesOnly)ensureNames();
+}
+function onErr(e){S.err=(e&&e.code==='revoked')?'Seu acesso a este app foi alterado.':'Não foi possível carregar os dados. Recarregue a página.';renderMain();}
+function docs(snap){return snap.docs.map(function(d){var o=d.data();o.id=d.id;return o;});}
+
+
+/* ---------- Firebase ---------- */
+var fapp=initializeApp(firebaseConfig),fauth=getAuth(fapp),fdb=getFirestore(fapp);
+var unsubs=[],PH={},phLoading={},pendingLog=null;
+function SRV(){return serverTimestamp();}
+function norm(v){
+  if(v&&typeof v==='object'){
+    if(typeof v.toDate==='function')return v.toDate().toISOString();
+    if(Array.isArray(v))return v.map(norm);
+    var o={};Object.keys(v).forEach(function(k){o[k]=norm(v[k]);});return o;
+  }
+  return v;
+}
+function docsOf(snap){return snap.docs.map(function(d){var o=norm(d.data({serverTimestamps:'estimate'}));o.id=d.id;return o;});}
+function runWrite(fn){
+  var b=writeBatch(fdb);
+  if(pendingLog){b.set(doc(collection(fdb,'log')),pendingLog);pendingLog=null;}
+  fn(b);
+  return b.commit();
+}
+var DB={
+  collection:function(p){return {
+    add:function(d){var r=doc(collection(fdb,p));return runWrite(function(b){b.set(r,d);}).then(function(){return {id:r.id};});},
+    doc:function(id){return DB.doc(p+'/'+(id||doc(collection(fdb,p)).id));}
+  };},
+  doc:function(path){var r=doc(fdb,path);return {
+    id:r.id,
+    set:function(d){return runWrite(function(b){b.set(r,d);});},
+    update:function(d){return runWrite(function(b){b.update(r,d);});},
+    remove:function(){return runWrite(function(b){b.delete(r);});}
+  };}
+};
+var ASSETS={upload:function(blob){
+  return new Promise(function(res,rej){
+    var fr=new FileReader();
+    fr.onload=function(){
+      var url=fr.result;
+      if(url.length>900000){rej(new Error('big'));return;}
+      addDoc(collection(fdb,'photos'),{dataUrl:url,dono:myId(),criadoEm:serverTimestamp()}).then(function(r){PH[r.id]=url;res({id:r.id});},rej);
+    };
+    fr.onerror=function(){rej(new Error('read'));};
+    fr.readAsDataURL(blob);
+  });
+}};
+function blobUrl(id){return PH[id]||'';}
+function hydratePhotos(){
+  var imgs=document.querySelectorAll('img[data-pid]');
+  for(var i=0;i<imgs.length;i++){
+    (function(img){
+      var id=img.getAttribute('data-pid');
+      if(PH[id]!==undefined){if(PH[id]&&img.getAttribute('src')!==PH[id])img.setAttribute('src',PH[id]);return;}
+      if(phLoading[id])return;
+      phLoading[id]=1;
+      getDoc(doc(fdb,'photos',id)).then(function(sn){PH[id]=sn.exists()?sn.data().dataUrl:'';delete phLoading[id];hydratePhotos();}).catch(function(){delete phLoading[id];});
+    })(imgs[i]);
+  }
+}
+
+/* ---------- acesso por link no e-mail ---------- */
+function authHTML(){
+  var head='<header class="top"><div><h1>Frota comercial</h1><p class="sub">GTF</p></div></header>';
+  var msg=(S.authMsg&&S.auth!=='sent'&&S.auth!=='denied')?'<div class="banner bad">'+esc(S.authMsg)+'</div>':'';
+  var field='<label class="field"><span>E-mail da GTF</span><input id="a-email" type="email" autocomplete="email" inputmode="email" placeholder="nome.sobrenome@gtf.com.br"></label>';
+  if(S.auth==='loading')return head+'<div class="empty">Carregando…</div>';
+  if(S.auth==='sent')return head+'<div class="blk"><h3>Verifique seu e-mail</h3><p class="hint">Enviamos um link de acesso para <b>'+esc(S.authMsg)+'</b>. Abra a mensagem neste mesmo aparelho e toque no link. Se não encontrar, olhe a caixa de spam.</p><button class="btn block" data-act="auth-back">Usar outro e-mail</button></div>';
+  if(S.auth==='denied')return head+'<div class="blk"><h3>Acesso não liberado</h3><p class="hint">O e-mail <b>'+esc(S.authMsg)+'</b> ainda não foi liberado neste app. Peça a um administrador para cadastrar você.</p><button class="btn block" data-act="logout">Sair</button></div>';
+  if(S.auth==='askemail')return head+msg+'<div class="blk"><h3>Confirme seu e-mail</h3><p class="hint">Digite o e-mail da GTF que recebeu o link.</p>'+field+'<button class="btn primary block" data-act="confirm-link">Entrar</button></div>';
+  return head+msg+'<div class="blk"><h3>Entrar</h3><p class="hint">Use o seu e-mail da GTF. Você recebe um link para entrar, sem senha.</p>'+field+'<button class="btn primary block" data-act="send-link">Receber link de acesso</button></div>';
+}
+function demoStrip(){
+  return '<div class="demo"><div class="demo-row" style="justify-content:space-between"><span>'+esc(S.me.name)+' <span class="sub">('+esc(S.me.id)+')</span></span><button class="btn" data-act="logout">Sair</button></div></div>';
+}
+function showAuth(state,msg){S.auth=state;S.authMsg=msg||'';S.me=null;renderMain();}
+function sendLink(email){
+  email=(email||'').trim().toLowerCase();
+  if(!/^[^@\s]+@gtf\.com\.br$/.test(email)){S.authMsg='Use o seu e-mail da GTF, terminado em @gtf.com.br.';renderMain();return;}
+  var url=location.href.split('#')[0].split('?')[0];
+  sendSignInLinkToEmail(fauth,email,{url:url,handleCodeInApp:true}).then(function(){
+    try{localStorage.setItem('frota_email',email);}catch(e){}
+    S.auth='sent';S.authMsg=email;renderMain();
+  }).catch(function(){S.authMsg='Não foi possível enviar o link agora. Tente de novo em instantes.';renderMain();});
+}
+function finishLink(email){
+  signInWithEmailLink(fauth,email,location.href).then(function(){
+    try{localStorage.removeItem('frota_email');}catch(e){}
+    history.replaceState(null,'',location.pathname);
+  }).catch(function(){
+    history.replaceState(null,'',location.pathname);
+    S.auth='out';S.authMsg='Este link expirou, já foi usado ou o e-mail não confere. Peça um novo link.';S.me=null;renderMain();
+  });
+}
+function startSession(user){
+  var email=(user.email||'').toLowerCase();
+  S.isAdmin=ADMINS.map(function(x){return String(x).toLowerCase();}).indexOf(email)>=0;
+  return getDoc(doc(fdb,'users',email)).then(function(sn){
+    var p=sn.exists()?sn.data():null;
+    if(!p&&!S.isAdmin){showAuth('denied',email);return;}
+    var papel=p?p.papel:'aprovador';
+    S.me={id:email,name:(p&&p.nome)||email.split('@')[0]};
+    S.names[email]=S.me.name;
+    S.canApprove=S.isAdmin||papel==='aprovador'||papel==='ambos';
+    S.canRequest=papel==='solicitante'||papel==='ambos';
+    S.canWrite=true;S.db=DB;S.assets=ASSETS;S.user=null;S.auth='in';S.err='';
+    listen();update();
+  }).catch(function(){showAuth('denied',email);});
+}
+function unlisten(){unsubs.forEach(function(f){try{f();}catch(e){}});unsubs=[];}
+function listen(){
+  unlisten();
+  function on(q,cb){unsubs.push(onSnapshot(q,cb,onErr));}
+  on(collection(fdb,'cars'),function(s){S.cars=docsOf(s);update();});
+  on(query(collection(fdb,'requests'),orderBy('criadoEm','desc'),limit(500)),function(s){
+    S.requests=docsOf(s);
+    S.requests.forEach(function(r){if(r.requesterName)S.names[r.requesterId]=r.requesterName;});
+    update();
+  });
+  on(collection(fdb,'decisions'),function(s){
+    S.decisions={};
+    s.docs.forEach(function(d){var o=norm(d.data({serverTimestamps:'estimate'}));S.decisions[d.id]=o;if(o.byName)S.names[o.byId]=o.byName;});
+    update();
+  });
+  if(S.canApprove)on(query(collection(fdb,'log'),orderBy('t','desc'),limit(300)),function(s){
+    S.logs={};
+    docsOf(s).forEach(function(e){if(e.autorNome)S.names[e.autor]=e.autorNome;e.ator=e.autor;(S.logs[e.autor]=S.logs[e.autor]||[]).push(e);});
+    update();
+  });
+  if(S.isAdmin)on(collection(fdb,'users'),function(s){S.users=s.docs.map(function(d){var o=d.data();o.id=d.id;return o;});update();});
+}
+var PAPEL={solicitante:'Solicita carros',aprovador:'Aprova solicitações',ambos:'Solicita e aprova'};
+function usersHTML(){
+  var h='<div class="blk"><h3>Liberar uma pessoa</h3><p class="hint">Cadastre o e-mail da GTF. Quem não estiver aqui não consegue entrar no app.</p>'
+    +'<label class="field"><span>Nome</span><input id="u-nome" autocomplete="off"></label>'
+    +'<label class="field"><span>E-mail da GTF</span><input id="u-email" type="email" autocomplete="off" inputmode="email"></label>'
+    +'<label class="field"><span>Papel</span><select id="u-papel"><option value="solicitante">Solicita carros</option><option value="aprovador">Aprova solicitações</option><option value="ambos">Solicita e aprova</option></select></label>'
+    +'<button class="btn primary block" data-act="add-user">Salvar pessoa</button><div id="u-err"></div></div>';
+  var us=(S.users||[]).slice().sort(function(a,b){return String(a.nome).localeCompare(String(b.nome));});
+  if(!us.length)return h+'<div class="empty">Ninguém cadastrado ainda.</div>';
+  return h+us.map(function(u){
+    return '<div class="card static"><div class="row1"><div><b>'+esc(u.nome)+'</b><p class="model">'+esc(u.id)+'</p></div><span class="pill aprovado">'+esc(PAPEL[u.papel]||u.papel)+'</span></div>'
+      +'<div class="row" style="margin-top:10px"><button class="btn danger" data-act="del-user" data-id="'+esc(u.id)+'">Remover acesso</button></div></div>';
+  }).join('');
+}
+
+function init(){
+  S.auth='loading';renderMain();
+  if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(function(){});
+  var linkMode=isSignInWithEmailLink(fauth,location.href);
+  onAuthStateChanged(fauth,function(u){
+    if(u){startSession(u);return;}
+    unlisten();S.cars=[];S.requests=[];S.decisions={};S.logs={};S.users=[];S.me=null;S.isAdmin=false;
+    if(!isSignInWithEmailLink(fauth,location.href))showAuth('out');
+  });
+  if(linkMode){
+    var e=null;try{e=localStorage.getItem('frota_email');}catch(x){}
+    if(e)finishLink(e);else{S.auth='askemail';renderMain();}
+  }
+  setInterval(function(){if(S.me)renderMain();},60000);
+}
+init();
+})();
+</script>
+</body>
+</html>
